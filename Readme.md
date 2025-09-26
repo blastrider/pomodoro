@@ -38,9 +38,6 @@ Desktop notifications behind feature notify (optional).
 How to adapt
 See final section in the project README (examples to adapt to breathing timer, exam timer, reading sessions).
 
-markdown
-Copier le code
-
 ---
 
 # C) Conformité checklist (✓/✗ + corrections where needed)
@@ -76,11 +73,3 @@ Copier le code
 1. **Minuteur respiration 4-7-8** : remplacer `Schedule::from_config` par pattern fixe 4s inhale / 7s hold / 8s exhale, exécuter en boucle ; garder journal minimal.  
 2. **Timer examen blanc** : paramètres durée totale + checkpoints → convertir segments pour checkpoints réguliers, alertes sonores/options export.  
 3. **Sessions lecture** : ajouter champ `pages_read`, collecter via prompts post-session et exporter CSV avec progression par jour.  
-
----
-
-# Remarques & suggestions
-- YAML presets: `serde_yaml` upstream a été marqué "not actively maintained" — je l’ai rendu optionnel (feature), tu peux forcer ou remplacer par JSON/TOML selon préférence. (Je l’ai commenté dans `Cargo.toml`.) :contentReference[oaicite:8]{index=8}  
-- UI: pour keypress sans Enter, intégrer `crossterm`/`termion` (plus de boulot pour raw mode). J’ai choisi une UI robuste minimale (`indicatif`) pour rester portable et simple.  
-- Tests: j’ai fourni tests de base ; pour CI rapide, ajoute un test d’intégration qui simule tout en dur (durées en secondes).  
-- `rust-version` : j’ai mis `1.72` (tu peux remplacer par l’output de `rustup show` si tu veux forcer exact).
