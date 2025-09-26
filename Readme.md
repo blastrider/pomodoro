@@ -4,7 +4,7 @@ But: petit minuteur Pomodoro offline, journal JSON quotidien, export Markdown/CS
 
 ## Build
 Requires Rust stable (toolchain `stable`).
-```bash
+
 cargo build --release
 Usage
 
