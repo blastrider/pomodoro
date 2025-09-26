@@ -7,8 +7,7 @@ Requires Rust stable (toolchain `stable`).
 ```bash
 cargo build --release
 Usage
-bash
-Copier le code
+
 # classic
 cargo run -- --focus 25 --short 5 --long 15 --cycles 4 --task "Study Rust" --beep
 
@@ -52,7 +51,6 @@ See final section in the project README (examples to adapt to breathing timer, e
 - ✓ Dépendances récentes & justifiées (voir citations).  
 - ✓ Licence MIT/Apache-2.0 incluse (Cargo.toml header).  
 
-> Si tu veux, je coche réellement dans le repo quand je pousse les fichiers — ici j’ai préparé tout ce qu’il faut.
 
 ---
 
