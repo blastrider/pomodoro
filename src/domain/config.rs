@@ -1,3 +1,4 @@
+// src/domain/config.rs
 use anyhow::{anyhow, Context, Result};
 use serde::{Deserialize, Serialize};
 use std::fs;
@@ -10,6 +11,18 @@ pub struct Config {
     pub long_min: u64,
     pub cycles: u8,
     pub task: Option<String>,
+}
+
+impl Default for Config {
+    fn default() -> Self {
+        Self {
+            focus_min: 25,
+            short_min: 5,
+            long_min: 15,
+            cycles: 4,
+            task: None,
+        }
+    }
 }
 
 impl Config {
@@ -34,16 +47,6 @@ impl Config {
         Ok(())
     }
 
-    pub fn default() -> Self {
-        Self {
-            focus_min: 25,
-            short_min: 5,
-            long_min: 15,
-            cycles: 4,
-            task: None,
-        }
-    }
-
     pub fn from_preset_file(path: &Path) -> Result<Self> {
         let s = fs::read_to_string(path)
             .with_context(|| format!("reading preset file {}", path.display()))?;
@@ -62,12 +65,14 @@ impl Config {
             }
             #[cfg(not(feature = "serde_yaml"))]
             {
-                Err(anyhow!("YAML presets require building with the `serde_yaml` feature"))
+                Err(anyhow!(
+                    "YAML presets require building with the `serde_yaml` feature"
+                ))
             }
         }
     }
 
-    pub fn from_cli_and_preset(cli: &crate::Cli) -> Result<Self> {
+    pub fn from_cli_and_preset(cli: &crate::CliArgs) -> Result<Self> {
         let mut base = if let Some(p) = &cli.preset {
             Self::from_preset_file(p)?
         } else {
