@@ -66,8 +66,7 @@ pub struct Journal {
 
 impl Journal {
     pub fn open_default() -> Result<Self> {
-        let pd = ProjectDirs::from("com", "you", "pomodoro")
-            .context("finding project dirs")?;
+        let pd = ProjectDirs::from("com", "you", "pomodoro").context("finding project dirs")?;
         let data_dir = pd.data_dir();
         fs::create_dir_all(data_dir).context("creating data dir")?;
         let today = OffsetDateTime::now_utc().date();
@@ -108,7 +107,11 @@ impl Journal {
             let end = e.end.map(|d| d.to_string()).unwrap_or_default();
             let task = e.cfg.task.clone().unwrap_or_default().replace(',', " ");
             let segments = e.segments.join(" | ");
-            csv.push_str(&format!("{},{},{},{},{}\n", e.start, end, format!("{:?}", e.state), task, segments));
+            // corrigé : éviter `format!(..., format!(..))`
+            csv.push_str(&format!(
+                "{},{:?},{:?},{},{}\n",
+                e.start, end, e.state, task, segments
+            ));
         }
         let out = self.dir.join("journal-today.csv");
         fs::write(&out, csv)?;
