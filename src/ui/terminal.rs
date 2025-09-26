@@ -14,11 +14,16 @@ impl Terminal {
     }
 
     pub async fn show_segment(&mut self, label: String, seconds: u64) -> Result<()> {
-        let style = ProgressStyle::with_template("{prefix} {bar:40.cyan/blue} {pos}/{len}s {elapsed}")
-            .context("invalid progress style template")?;
+        let style =
+            ProgressStyle::with_template("{prefix} {bar:40.cyan/blue} {pos}/{len}s {elapsed}")
+                .context("invalid progress style template")?;
         let pb = ProgressBar::new(seconds);
         pb.set_style(style);
-        pb.set_prefix(format!("[{}] {}", label, self.task.clone().unwrap_or_default()));
+        pb.set_prefix(format!(
+            "[{}] {}",
+            label,
+            self.task.clone().unwrap_or_default()
+        ));
 
         let mut remaining = seconds;
         while remaining > 0 {
