@@ -112,19 +112,12 @@ impl SessionRunner {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use crate::domain::schedule::Schedule;
 
     #[tokio::test]
     async fn test_short_schedule_run() {
-        let cfg = crate::domain::config::Config {
-            focus_min: 0,
-            short_min: 0,
-            long_min: 0,
-            cycles: 2,
-            task: Some("test".into()),
-        };
-        let schedule = Schedule::from_minutes_for_test(1, 1, 1, 2);
+        // on n'a pas besoin de `cfg` ici : on teste la construction de schedule depuis secondes
+        let schedule = Schedule::from_seconds_for_test(1, 1, 1, 2);
         assert_eq!(schedule.segments.len(), 4);
     }
 }
