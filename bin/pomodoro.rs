@@ -1,20 +1,14 @@
-#![forbid(unsafe_code)]
+// bin/pomodoro.rs
 use anyhow::Context;
 use clap::Parser;
-use std::path::PathBuf;
 use tracing::{info, warn};
 use tracing_subscriber::EnvFilter;
 
-mod domain;
-mod infra;
-mod ui;
-
-use domain::config::Config;
-use domain::session::SessionRunner;
-use infra::storage::Journal;
+// import depuis la lib (crate name from Cargo.toml: "pomodoro-cli" -> pomodoro_cli)
+use pomodoro_cli::{CliArgs, Config, Journal, SessionRunner};
 
 #[derive(Parser, Debug)]
-#[command(name = "pomodoro", about = "CLI Pomodoro — offline, journal local")]
+#[command(name = "pomodoro-cli", about = "CLI Pomodoro — offline, journal local")]
 struct Cli {
     /// Focus minutes (default 25)
     #[arg(long)]
@@ -54,7 +48,7 @@ struct Cli {
 
     /// Preset file (yaml/json) path
     #[arg(long)]
-    preset: Option<PathBuf>,
+    preset: Option<std::path::PathBuf>,
 }
 
 #[tokio::main]
@@ -67,7 +61,18 @@ async fn main() -> anyhow::Result<()> {
     let cli = Cli::parse();
     info!("Starting pomodoro");
 
-    let cfg = Config::from_cli_and_preset(&cli)
+    // --- map clap's `Cli` into the library-level `CliArgs` DTO
+    let lib_cli = CliArgs {
+        focus: cli.focus,
+        short: cli.short,
+        long: cli.long,
+        cycles: cli.cycles,
+        task: cli.task.clone(),
+        preset: cli.preset.clone(),
+    };
+
+    // call lib API with the mapped type
+    let cfg = Config::from_cli_and_preset(&lib_cli)
         .context("Failed to build configuration from CLI/preset")?;
 
     let journal = Journal::open_default().context("opening journal")?;
