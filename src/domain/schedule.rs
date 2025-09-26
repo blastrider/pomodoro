@@ -21,6 +21,7 @@ pub struct Schedule {
 }
 
 impl Schedule {
+    /// Build a schedule from a Config (durations in minutes).
     pub fn from_config(cfg: &crate::domain::config::Config) -> Self {
         let mut segs = Vec::new();
         for i in 1..=cfg.cycles {
@@ -47,9 +48,9 @@ impl Schedule {
         Schedule { segments: segs }
     }
 
-    /// Return a shortened schedule for testing (seconds instead of minutes)
-    #[cfg(test)]
-    pub fn from_minutes_for_test(focus_s: u64, short_s: u64, long_s: u64, cycles: u8) -> Self {
+    /// Public helper: build a schedule using durations given in **seconds**.
+    /// Useful for tests/integration where you want short, fast-running segments.
+    pub fn from_seconds_for_test(focus_s: u64, short_s: u64, long_s: u64, cycles: u8) -> Self {
         let mut segs = Vec::new();
         for i in 1..=cycles {
             segs.push(Segment {
