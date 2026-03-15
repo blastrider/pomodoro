@@ -55,8 +55,7 @@ struct Cli {
     gui: bool,
 }
 
-#[tokio::main]
-async fn main() -> anyhow::Result<()> {
+fn main() -> anyhow::Result<()> {
     // init tracing
     tracing_subscriber::fmt()
         .with_env_filter(EnvFilter::from_default_env())
@@ -81,34 +80,39 @@ async fn main() -> anyhow::Result<()> {
         return Ok(());
     }
 
-    // call lib API with the mapped type
-    let cfg = Config::from_cli_and_preset(&lib_cli)
-        .context("Failed to build configuration from CLI/preset")?;
+    // Since Dioxus blocks and has its own runtime, we must construct a Tokio runtime manually
+    // only if we are using the CLI mode. This prevents "cannot start a runtime from within a runtime".
+    let rt = tokio::runtime::Runtime::new().context("creating tokio runtime")?;
+    rt.block_on(async {
+        // call lib API with the mapped type
+        let cfg = Config::from_cli_and_preset(&lib_cli)
+            .context("Failed to build configuration from CLI/preset")?;
 
-    let journal = Journal::open_default().context("opening journal")?;
-    let mut runner = SessionRunner::new(cfg, journal, cli.beep, cli.notify);
+        let journal = Journal::open_default().context("opening journal")?;
+        let mut runner = SessionRunner::new(cfg, journal, cli.beep, cli.notify);
 
-    // ctrlc handling: ensure save on interrupt
-    runner.install_ctrlc_handler()?;
+        // ctrlc handling: ensure save on interrupt
+        runner.install_ctrlc_handler()?;
 
-    let result = runner.run().await;
+        let result = runner.run().await;
 
-    match result {
-        Ok(meta) => {
-            info!("Session finished: {:?}", meta);
+        match result {
+            Ok(meta) => {
+                info!("Session finished: {:?}", meta);
+            }
+            Err(e) => {
+                warn!("Session ended with error: {:?}", e);
+            }
         }
-        Err(e) => {
-            warn!("Session ended with error: {:?}", e);
+
+        // exports if requested
+        if cli.export_md {
+            runner.export_markdown().context("export md")?;
         }
-    }
+        if cli.export_csv {
+            runner.export_csv().context("export csv")?;
+        }
 
-    // exports if requested
-    if cli.export_md {
-        runner.export_markdown().context("export md")?;
-    }
-    if cli.export_csv {
-        runner.export_csv().context("export csv")?;
-    }
-
-    Ok(())
+        Ok(())
+    })
 }
