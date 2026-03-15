@@ -55,8 +55,7 @@ struct Cli {
     gui: bool,
 }
 
-#[tokio::main]
-async fn main() -> anyhow::Result<()> {
+fn main() -> anyhow::Result<()> {
     // init tracing
     tracing_subscriber::fmt()
         .with_env_filter(EnvFilter::from_default_env())
@@ -65,6 +64,31 @@ async fn main() -> anyhow::Result<()> {
     let cli = Cli::parse();
     info!("Starting pomodoro");
 
+    // If we are launching the GUI, avoid creating a Tokio runtime here.
+    // Dioxus desktop initializes its own runtime, and nesting runtimes panics.
+    if cli.gui {
+        let lib_cli = CliArgs {
+            focus: cli.focus,
+            short: cli.short,
+            long: cli.long,
+            cycles: cli.cycles,
+            task: cli.task.clone(),
+            preset: cli.preset.clone(),
+            gui: cli.gui,
+        };
+        pomodoro_cli::ui::gui::run_gui(lib_cli);
+        return Ok(());
+    }
+
+    let rt = tokio::runtime::Builder::new_multi_thread()
+        .enable_all()
+        .build()
+        .context("Failed to build Tokio runtime")?;
+
+    rt.block_on(run_cli(cli))
+}
+
+async fn run_cli(cli: Cli) -> anyhow::Result<()> {
     // --- map clap's `Cli` into the library-level `CliArgs` DTO
     let lib_cli = CliArgs {
         focus: cli.focus,
@@ -75,11 +99,6 @@ async fn main() -> anyhow::Result<()> {
         preset: cli.preset.clone(),
         gui: cli.gui,
     };
-
-    if lib_cli.gui {
-        pomodoro_cli::ui::gui::run_gui(lib_cli);
-        return Ok(());
-    }
 
     // call lib API with the mapped type
     let cfg = Config::from_cli_and_preset(&lib_cli)
