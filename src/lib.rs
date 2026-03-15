@@ -17,6 +17,7 @@ pub struct CliArgs {
     pub cycles: Option<u8>,
     pub task: Option<String>,
     pub preset: Option<PathBuf>,
+    pub gui: bool,
 }
 
 // Re-export convenient types commonly used by binaries/tests

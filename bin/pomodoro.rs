@@ -49,6 +49,10 @@ struct Cli {
     /// Preset file (yaml/json) path
     #[arg(long)]
     preset: Option<std::path::PathBuf>,
+
+    /// Launch the desktop GUI
+    #[arg(long, default_value_t = false)]
+    gui: bool,
 }
 
 #[tokio::main]
@@ -69,7 +73,13 @@ async fn main() -> anyhow::Result<()> {
         cycles: cli.cycles,
         task: cli.task.clone(),
         preset: cli.preset.clone(),
+        gui: cli.gui,
     };
+
+    if lib_cli.gui {
+        pomodoro_cli::ui::gui::run_gui(lib_cli);
+        return Ok(());
+    }
 
     // call lib API with the mapped type
     let cfg = Config::from_cli_and_preset(&lib_cli)
